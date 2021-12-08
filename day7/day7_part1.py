@@ -21,4 +21,4 @@ for pos in range(minimum_pos, maximum_pos):
     print(f"Cost to move all crabs to pos {pos}: {fuel_cost}")
 fuel_cost_all = np.array(fuel_cost_all)
 cheapest_pos = np.argmin(fuel_cost_all)
-print(f"Cheapest position to move: {cheapest_pos} with cost {fuel_cost_all[cheapest_pos]}")
+print(f"Cheapest position: {cheapest_pos} with cost {fuel_cost_all[cheapest_pos]}")
