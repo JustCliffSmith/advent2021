@@ -1,6 +1,6 @@
 import numpy as np
 
-with open("input9_test.txt", "r") as f:
+with open("input9.txt", "r") as f:
     lines = f.readlines()
 
 height_map = np.array([[int(height) for height in line.strip()] for line in lines])
@@ -30,61 +30,26 @@ def is_lowpoint(height_map, i, j):
         return False
 
 
-def calculate_basin_size(height_map, i, j):
-    """ Start from the low point, then go in each direction until a nine is hit"""
-    basin_size = 1 # account for the low point
-    moved_i = i
-    moved_j = j
-    print(moved_i, moved_j)
-    value = 0
-    while value < 9:
-        moved_i += 1
-        if moved_i>= 0 and moved_i < height_map.shape[0]:
-            value = height_map[moved_i][moved_j]
-            if value < 9:
-                basin_size += 1
-                print(moved_i, moved_j, value, basin_size)
-        else:
-            moved_i = i
-            break
-        #print(moved_i, moved_j, value, basin_size)
-    value = 0
-    while value < 9:
-        moved_i -= 1
-        if moved_i >= 0 and moved_i < height_map.shape[0]:
-            value = height_map[moved_i][moved_j]
-            if value < 9:
-                basin_size += 1
-                print(moved_i, moved_j, value, basin_size)
-        else:
-            moved_i = i
-            break
-        #print(moved_i, moved_j, value, basin_size)
-    value = 0
-    while value < 9:
-        moved_j += 1
-        if moved_j >= 0 and moved_j < height_map.shape[1]:
-            value = height_map[moved_i][moved_j]
-            if value < 9:
-                basin_size += 1
-                print(moved_i, moved_j, value, basin_size)
-        else:
-            moved_j = j
-            break
-        #print(moved_i, moved_j, value, basin_size)
-    value = 0
-    while value < 9:
-        moved_j -= 1
-        if moved_j >= 0 and moved_i < height_map.shape[1]:
-            value = height_map[moved_i][moved_j]
-            if value < 9:
-                basin_size += 1
-                print(moved_i, moved_j, value, basin_size)
-        else:
-            moved_j = j
-            break
-        #print(moved_i, moved_j, value, basin_size)
-    return basin_size
+def calculate_basin_map(basin_map, height_map, i, j):
+    basin_map[i][j] = 1
+    height_map[i][j] = 9 # So it doesn't recurse infinitely.
+    if i - 1 >= 0 and i - 1 < height_map.shape[0]:
+        if height_map[i - 1][j] < 9:
+            basin_map[i - 1][j] = 1
+            basin_map = calculate_basin_map(basin_map, height_map, i-1, j)
+    if i + 1 >= 0 and i + 1 < height_map.shape[0]:
+        if height_map[i + 1][j] < 9:
+            basin_map[i + 1][j] = 1
+            basin_map = calculate_basin_map(basin_map, height_map, i+1, j)
+    if j + 1 >= 0 and j + 1 < height_map.shape[1]:
+        if height_map[i][j + 1] < 9:
+            basin_map[i][j + 1] = 1
+            basin_map = calculate_basin_map(basin_map, height_map, i, j+1)
+    if j - 1 >= 0 and j - 1 < height_map.shape[1]:
+        if height_map[i][j - 1] < 9:
+            basin_map[i][j - 1] = 1
+            basin_map = calculate_basin_map(basin_map, height_map, i, j-1)
+    return basin_map
 
 
 low_point_map = np.ones(height_map.shape)
@@ -93,8 +58,9 @@ for i in range(height_map.shape[0]):
     for j in range(height_map.shape[1]):
         if is_lowpoint(height_map, i, j) is True:
             low_point_map[i][j] = 0
-            basin_sizes.append(calculate_basin_size(height_map, i, j))
-            print(i, j, calculate_basin_size(height_map, i, j))
+            basin_map = np.zeros(height_map.shape)
+            basin_map = calculate_basin_map(basin_map, height_map, i, j)
+            basin_sizes.append(basin_map.sum())
 
 basin_sizes = sorted(basin_sizes, reverse=True)
 print(basin_sizes)
